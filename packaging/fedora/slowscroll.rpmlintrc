@@ -1,0 +1,4 @@
+# libadwaita and gtk4 are loaded through GObject introspection (gi.require_version),
+# and Fedora packages do not provide typelib(...) names, so they have to be
+# required by package name.
+addFilter("explicit-lib-dependency libadwaita")

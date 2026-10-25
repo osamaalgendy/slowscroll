@@ -10,13 +10,13 @@ Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 
 BuildRequires:  python3-devel
-BuildRequires:  python3-evdev
+BuildRequires:  python3dist(evdev)
 BuildRequires:  desktop-file-utils
 BuildRequires:  libappstream-glib
 BuildRequires:  systemd-rpm-macros
 
-Requires:       python3-evdev
-Requires:       python3-gobject
+Requires:       python3dist(evdev)
+Requires:       python3dist(pygobject)
 Requires:       gtk4
 Requires:       libadwaita
 Requires:       systemd
@@ -33,7 +33,7 @@ A GTK4/libadwaita settings window (slowscroll-settings) turns the service on and
 off and controls the speeds, with a reset button for each setting. The service
 is not enabled automatically. After installing, log out and back in (so the
 udev rule gives you access to the touchpad), then turn it on in the settings
-window or run "systemctl --user enable --now slowscroll.service".
+window.
 
 %prep
 %autosetup

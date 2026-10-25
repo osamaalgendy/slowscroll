@@ -9,7 +9,7 @@
        mkdir -p ~/rpmbuild/{SOURCES,SPECS}
        cp slowscroll-1.0.0.tar.gz ~/rpmbuild/SOURCES/ ; cp slowscroll.spec ~/rpmbuild/SPECS/
        rpmbuild -ba ~/rpmbuild/SPECS/slowscroll.spec
-       rpmlint ~/rpmbuild/SPECS/slowscroll.spec ~/rpmbuild/RPMS/noarch/*.rpm ~/rpmbuild/SRPMS/*.rpm
+       rpmlint -r slowscroll.rpmlintrc ~/rpmbuild/SPECS/slowscroll.spec ~/rpmbuild/RPMS/noarch/*.rpm ~/rpmbuild/SRPMS/*.rpm
 4. Host the .spec and .src.rpm (easiest: a Copr build or a GitHub release) and
    put the URLs in `REVIEW-REQUEST.txt`.
 5. Open the Package Review bug on Bugzilla and paste the text from

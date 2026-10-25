@@ -42,7 +42,10 @@ Notes for the reviewer:
 * "Mac speed" defaults (SPEED2=0.41) are an estimate, measured as: GNOME moves
   content 10.5 px per mm of finger travel on this setup, the 2x HiDPI panel shows
   4.35 px per mm, so 0.41 makes content follow the fingers; users can change it.
-* No AppStream metainfo yet (the settings app has a .desktop file only).
+* AppStream metainfo is included and validated in %check.
+* rpmlint: 0 errors, 0 warnings with slowscroll.rpmlintrc, which filters only
+  explicit-lib-dependency for libadwaita (loaded via GObject introspection; Fedora
+  does not provide typelib(Adw)). Built and linted in a clean fedora:44 container.
 * The UI is English by default, with an Arabic translation selected by locale
   (no gettext catalogs yet).
 * This is my first package and I am looking for a sponsor.
