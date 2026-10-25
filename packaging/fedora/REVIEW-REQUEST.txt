@@ -1,0 +1,50 @@
+Bugzilla: https://bugzilla.redhat.com/enter_bug.cgi?product=Fedora&component=Package%20Review
+Summary:      Review Request: slowscroll - Touchpad scroll speed, acceleration and momentum for libinput
+(Keep the Summary line exactly in the form "Review Request: <name> - <summary>".)
+
+--------------------------- paste the text below ----------------------------
+
+Spec URL: https://YOUR-HOST/slowscroll.spec
+SRPM URL: https://YOUR-HOST/slowscroll-1.0.0-1.fc44.src.rpm
+
+Description:
+libinput and GNOME have no setting for two-finger touchpad scroll speed
+(upstream request: https://gitlab.freedesktop.org/libinput/libinput/issues/185).
+slowscroll sits between the touchpad and libinput. It grabs the touchpad
+(evdev) and re-emits its events through a virtual touchpad (uinput), scaling the
+shared movement of two fingers with a smooth speed-dependent acceleration curve,
+scaling three-finger gestures separately, and adding a unified momentum glide so
+every application scrolls the same way. A GTK4/libadwaita settings window
+controls the speeds with a reset button for each setting.
+
+Fedora Account System Username: YOUR-FAS-USERNAME
+
+Notes for the reviewer:
+* License is GPL-3.0-or-later; LICENSE is the unmodified GPLv3 text and all
+  source files carry an SPDX header.
+* Noarch, pure Python (python3-evdev, python3-gobject, libadwaita, gtk4).
+* The systemd USER service is NOT enabled by default; users turn it on in the
+  settings window or run "systemctl --user enable --now slowscroll.service".
+  A re-login is needed after install for the uaccess rule to apply.
+* %check runs desktop-file-validate and a unit test suite for the event engine
+  (tests/test_engine.py, no hardware needed).
+* Security: the package ships /usr/lib/udev/rules.d/70-slowscroll.rules which
+  gives the user at the console (uaccess) read access to touchpad event nodes
+  and access to /dev/uinput. Access to uinput lets a process create virtual
+  input devices (including keyboards). I consider this acceptable for a desktop
+  tool, but I would like the reviewer's (and, if needed, FESCo/security
+  team's) opinion on whether the rule should instead be shipped as a
+  documented opt-in, or whether the daemon should run as a hardened system
+  service instead of a user service.
+* Tested only on a MacBookPro11,4 (bcm5974 touchpad) with Fedora 44, GNOME 50
+  (Wayland), libinput 1.31. Other multitouch touchpads are expected to work but
+  are untested.
+* "Mac speed" defaults (SPEED2=0.41) are an estimate, measured as: GNOME moves
+  content 10.5 px per mm of finger travel on this setup, the 2x HiDPI panel shows
+  4.35 px per mm, so 0.41 makes content follow the fingers; users can change it.
+* No AppStream metainfo yet (the settings app has a .desktop file only).
+* The application ID io.github.slowscroll.Settings will be changed to match
+  the upstream GitHub account before import.
+* The UI is English by default, with an Arabic translation selected by locale
+  (no gettext catalogs yet).
+* This is my first package and I am looking for a sponsor.

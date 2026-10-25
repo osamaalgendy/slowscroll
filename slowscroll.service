@@ -1,0 +1,13 @@
+[Unit]
+Description=Touchpad scroll acceleration and momentum
+Documentation=man:slowscroll(1)
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/usr/bin/slowscroll --config %h/.config/slowscroll.conf
+Restart=always
+RestartSec=1
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

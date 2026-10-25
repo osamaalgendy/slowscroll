@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Slowscroll
+Name[ar]=Slowscroll
+Comment=Touchpad scroll speed, acceleration and momentum
+Comment[ar]=سرعة وتسارع وانزلاق التمرير في الـ Touchpad
+Exec=slowscroll-settings
+Icon=input-touchpad-symbolic
+Categories=Settings;HardwareSettings;GTK;
+Keywords=touchpad;trackpad;scroll;speed;acceleration;momentum;
+StartupNotify=true

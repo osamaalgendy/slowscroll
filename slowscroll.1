@@ -1,0 +1,52 @@
+.TH SLOWSCROLL 1 "October 2026" "slowscroll 1.0.0" "User Commands"
+.SH NAME
+slowscroll \- touchpad scroll speed, acceleration and momentum for libinput
+.SH SYNOPSIS
+.B slowscroll
+[\fB\-\-config\fR \fIFILE\fR] [\fB\-\-device\fR \fIEVDEV\fR] [\fB\-\-list\fR] [\fB\-\-curve\fR]
+.SH DESCRIPTION
+libinput has no setting for two\-finger scroll speed. \fBslowscroll\fR grabs the
+touchpad, re\-emits its events through a virtual touchpad, and scales the
+shared movement of two or three fingers. Two\-finger scrolling follows a smooth
+speed\-dependent acceleration curve and ends with a unified momentum glide, so
+every application scrolls the same way. The compositor and applications see an
+ordinary touchpad.
+.PP
+It is normally run as a systemd user service:
+.PP
+.RS
+systemctl \-\-user enable \-\-now slowscroll.service
+.RE
+.PP
+The settings can be changed with the \fBslowscroll\-settings\fR(1) window or by
+editing the configuration file; changes are applied within a second.
+.SH OPTIONS
+.TP
+\fB\-\-config\fR \fIFILE\fR
+KEY=VALUE settings file, re\-read when it changes (default:
+\fI~/.config/slowscroll.conf\fR). See \fI/usr/share/doc/slowscroll/slowscroll.conf.example\fR
+for all keys.
+.TP
+\fB\-\-device\fR \fIEVDEV\fR
+Use this evdev node instead of auto\-detecting the touchpad.
+.TP
+\fB\-\-list\fR
+List detected touchpads and exit.
+.TP
+\fB\-\-curve\fR
+Print the acceleration curve for the current settings and exit.
+.SH FILES
+.TP
+.I ~/.config/slowscroll.conf
+User settings.
+.TP
+.I /usr/lib/udev/rules.d/70\-slowscroll.rules
+Grants the user at the console access to touchpads and /dev/uinput.
+.SH SECURITY
+Access to /dev/uinput allows a process to create virtual input devices,
+including keyboards. The udev rule gives this to the user at the console
+(the uaccess tag). Remove \fI70\-slowscroll.rules\fR if that is not acceptable.
+.SH SEE ALSO
+.BR libinput (1)
+.SH AUTHOR
+Osama Algendy

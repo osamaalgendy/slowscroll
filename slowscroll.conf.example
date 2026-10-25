@@ -1,0 +1,27 @@
+# slowscroll settings - written by "Slowscroll" settings app.
+# Saved changes apply within a second, no restart needed. 1.0 = system default speed.
+
+# --- two-finger scrolling ---
+SPEED2=0.45        # speed at normal finger speed
+ACCEL=0.6          # acceleration: 0 = constant, 0.9 = strong
+V_MID=80          # finger speed (mm/s) where speed equals SPEED2
+CURVE=2          # acceleration curve steepness
+ONSET_MM=1.2    # first mm of each scroll is boosted (instant start)
+ONSET_GAIN=4  # boost at touch-down, fading to normal over ONSET_MM
+RISE_MS=20      # how quickly acceleration kicks in
+FALL_MS=70      # how slowly it relaxes
+
+# --- three-finger gestures ---
+SPEED3=1
+
+# --- momentum (glide after lifting, same in every app) ---
+MOMENTUM=1    # 1 = on, 0 = off
+GLIDE_MS=450    # glide length
+GLIDE_GAIN=1
+GLIDE_MIN=20
+SETTLE_MS=200
+
+# --- hardware ---
+PAD_WIDTH_MM=104
+PAD_HEIGHT_MM=75
+LIFT_SIZE=130
