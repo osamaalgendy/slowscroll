@@ -298,23 +298,90 @@ class DetectTests(unittest.TestCase):
             evdev.list_devices, evdev.InputDevice = orig
         self.assertEqual([d.name for d in found], ["real pad"])
 
-    def test_glide_room(self):
+    def test_virtual_touchpad_has_the_real_size(self):
+        # an enlarged virtual pad moves libinput's palm/thumb zones off the
+        # physical surface, so resting palms move the pointer
+        from evdev import ecodes as e
+
+        class AbsInfo:
+            def __init__(self, value, min, max, fuzz, flat, resolution):
+                self.value, self.min, self.max = value, min, max
+                self.fuzz, self.flat, self.resolution = fuzz, flat, resolution
+
         class Info:
-            vendor = m.APPLE
+            vendor, product, version, bustype = m.APPLE, 0x274, 1, 3
 
         class Dev:
-            info = Info()
+            name, info = "pad", Info()
 
-        orig = m.click_method
+            def capabilities(self):
+                return {e.EV_ABS: [(e.ABS_MT_POSITION_X, AbsInfo(0, -4828, 5345, 0, 0, 0)),
+                                   (e.ABS_MT_POSITION_Y, AbsInfo(0, -203, 6803, 0, 0, 0)),
+                                   (e.ABS_MT_SLOT, AbsInfo(0, 0, 15, 0, 0, 0))],
+                        e.EV_KEY: [e.BTN_TOOL_FINGER]}
+
+            def input_props(self):
+                return []
+
+        created = {}
+        import evdev
+        orig = evdev.UInput
+        evdev.UInput = lambda caps, **kw: created.update(caps=caps) or "ui"
         try:
-            for method, vendor, want in (("default", m.APPLE, 400), ("fingers", 1, 400),
-                                         ("areas", m.APPLE, 0), ("default", 1, 0)):
-                m.click_method = lambda method=method: method
-                Dev.info.vendor = vendor
-                self.assertEqual(m.glide_room_mm(Dev()), want, (method, vendor))
+            ui, res, vlimits, max_slot = m.build_virtual(Dev(), m.load_config("/nonexistent"))
         finally:
-            m.click_method = orig
+            evdev.UInput = orig
+        absinfo = dict(created["caps"][e.EV_ABS])
+        self.assertEqual((absinfo[e.ABS_MT_POSITION_X].min, absinfo[e.ABS_MT_POSITION_X].max),
+                         (-4828, 5345))
+        self.assertEqual((absinfo[e.ABS_MT_POSITION_Y].min, absinfo[e.ABS_MT_POSITION_Y].max),
+                         (-203, 6803))
+        self.assertEqual(vlimits, {PX: (-4828, 5345), PY: (-203, 6803)})
+        self.assertEqual(max_slot, 15)
 
+
+class EdgeTests(unittest.TestCase):
+    def test_glide_reaching_the_edge_is_handed_to_the_app(self):
+        c = m.load_config("/nonexistent")
+        v = VDev()
+        lim = {PX: (-4828, 5345), PY: (-203, 6803)}           # the real pad
+        e = m.Engine(c, RES, lim, v.emit, size_lift=True)
+        p = Pad()
+        p.v, p.e = v, e
+        p.down({0: (0, 3000), 1: (1000, 3000)})
+        scroll(p, 250, 12)                                    # fast flick downwards
+        p.lift([0, 1])
+        self.assertEqual(e.mode, m.GLIDE)
+        now = time.monotonic()
+        e.last_tick = now
+        ticks = 0
+        while e.mode == m.GLIDE and ticks < 500:
+            now += 0.008
+            e.tick(now)
+            ticks += 1
+        self.assertEqual(e.mode, m.NORMAL, "glide ended at the edge")
+        self.assertEqual(v.touch, {}, "virtual fingers lifted (app kinetic takes over)")
+        guard = 2 * RES[PY]
+        last_y = max(y for t, c, y in v.events if c == PY)
+        self.assertLessEqual(last_y, lim[PY][1] - guard + 1, "never pushed into the edge")
+        self.assertGreater(m.math.hypot(*e.vel), 0, "lifted while still moving")
+
+    def test_slow_glide_far_from_edge_still_settles(self):
+        c = m.load_config("/nonexistent")
+        v = VDev()
+        e = m.Engine(c, RES, {PX: (-4828, 5345), PY: (-203, 6803)}, v.emit, size_lift=True)
+        p = Pad()
+        p.v, p.e = v, e
+        p.down({0: (0, 1000), 1: (1000, 1000)})
+        scroll(p, 80, 15, y0=1000)                            # moderate speed, lots of room
+        p.lift([0, 1])
+        self.assertEqual(e.mode, m.GLIDE)
+        now = time.monotonic()
+        e.last_tick = now
+        while e.mode == m.GLIDE:
+            now += 0.008
+            e.tick(now)
+        self.assertEqual(e.mode, m.SETTLE, "slowed down on its own, rests before lifting")
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)

@@ -48,14 +48,10 @@ grants it to the user at the console (`uaccess`).
 ## Known limitations
 
 * Only the first touchpad found is handled.
-* The momentum glide needs room to move the virtual fingers. On Apple
-  touchpads, and whenever clicking is set to "fingers", the virtual touchpad
-  is made larger than the real one. With "button areas" clicking it is not
-  (the click areas would move off the pad), so long glides stop at the pad edge.
-  The click method is read once at startup.
-* Because the virtual touchpad is larger on Apple touchpads, libinput's
-  edge-based palm and thumb zones no longer line up with the physical edges;
-  size-based palm detection still works.
+* The virtual touchpad has exactly the real pad's size, so libinput's thumb,
+  palm and click-area handling work as without slowscroll. A long glide that
+  reaches the pad's edge is handed over to the app's own kinetic scrolling for
+  the rest of its distance.
 * On non-Apple touchpads libinput may end a touch by pressure before the finger
   leaves the pad; then that app's own kinetic scrolling is used instead of the glide.
 

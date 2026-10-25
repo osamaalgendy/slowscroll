@@ -14,7 +14,9 @@ Grabs the real touchpad and re-emits events through a virtual one:
   lifting. Apps therefore see one ordinary touchpad scroll that ends at zero
   speed, so their own (inconsistent) kinetic scrolling never kicks in - the
   glide feels the same in every app. Touching the pad stops the glide; putting
-  two fingers down catches it and continues scrolling.
+  two fingers down catches it and continues scrolling. The virtual touchpad has
+  the real pad's size (so libinput's palm and thumb detection keep working); a
+  glide that reaches its edge is handed over to the app's own kinetic scrolling.
 
 Settings live in a KEY=VALUE file that is re-read automatically on change.
 """
@@ -25,11 +27,10 @@ import math
 import os
 import select
 import signal
-import subprocess
 import sys
 import time
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 EV_SYN, EV_KEY, EV_ABS = 0x00, 0x01, 0x03
 SYN_REPORT, SYN_DROPPED = 0, 3
@@ -434,14 +435,14 @@ class Engine:
             k = math.exp(-dt / (self.cfg["GLIDE_MS"] / 1000))
             self.vel = [v * k for v in self.vel]
             dx, dy = self.vel[0] * dt, self.vel[1] * dt
-            hit_edge = False
+            if self.near_edge(dx, dy):
+                # no room left on the pad: lift now, while still moving, so the
+                # app's own kinetic scrolling carries the rest of the glide
+                self.finish_glide()
+                return
             for vs, p in self.phantom.items():
-                for i, axis in ((0, PX), (1, PY)):
-                    lo, hi = self.vlimits[axis]
-                    p[i] += (dx, dy)[i]
-                    if not lo <= p[i] <= hi:
-                        p[i] = max(lo, min(hi, p[i]))
-                        hit_edge = True
+                p[0] += dx
+                p[1] += dy
                 q = [int(round(p[0])), int(round(p[1]))]
                 old = self.vpos.get(vs)
                 if old != q:
@@ -452,11 +453,21 @@ class Engine:
                         self.emit(EV_ABS, PY, q[1])
                     self.vpos[vs] = q
             self.emit(EV_SYN, SYN_REPORT, 0)
-            if hit_edge or self.mm(*self.vel) < 3.0:
+            if self.mm(*self.vel) < 3.0:
                 self.mode = SETTLE
                 self.settle_until = now + self.cfg["SETTLE_MS"] / 1000
         elif self.mode == SETTLE and now >= self.settle_until:
             self.finish_glide()
+
+    def near_edge(self, dx, dy, guard_mm=2.0):
+        """Would this glide step bring a phantom finger within guard_mm of the pad edge?"""
+        for p in self.phantom.values():
+            for i, axis, d in ((0, PX, dx), (1, PY, dy)):
+                lo, hi = self.vlimits[axis]
+                g = guard_mm * self.res[axis]
+                if not lo + g <= p[i] + d <= hi - g:
+                    return True
+        return False
 
     def finish_glide(self):
         for vs in self.phantom:
@@ -534,27 +545,12 @@ def describe(cfg):
 APPLE = 0x05AC
 
 
-def click_method():
-    try:
-        out = subprocess.run(["gsettings", "get", "org.gnome.desktop.peripherals.touchpad",
-                              "click-method"], capture_output=True, text=True, timeout=2)
-        return out.stdout.strip().strip("'")
-    except (OSError, subprocess.SubprocessError):
-        return "default"
+def build_virtual(dev, cfg):
+    """Virtual touchpad: same device and size, with an explicit resolution.
 
-
-def glide_room_mm(dev):
-    """Extra virtual-pad room for gliding fingers. libinput places its click
-    "button areas" at the bottom of the declared pad, so the pad is only enlarged
-    when clicking works by finger count (the default on Apple touchpads)."""
-    method = click_method()
-    if method == "fingers" or (method in ("default", "") and dev.info.vendor == APPLE):
-        return 400.0
-    return 0.0
-
-
-def build_virtual(dev, cfg, room_mm=400.0):
-    """Virtual touchpad: same device, explicit resolution, extra room for glides."""
+    It must not be larger than the real pad: libinput places its palm-edge and
+    thumb zones relative to the declared size, so an enlarged pad moves them off
+    the physical surface and resting palms start moving the pointer."""
     from evdev import ecodes, AbsInfo, UInput
     caps = dev.capabilities()
     caps.pop(ecodes.EV_SYN, None)
@@ -566,13 +562,11 @@ def build_virtual(dev, cfg, room_mm=400.0):
         i = info[axis]
         # same resolution libinput derives from its size hint, so speeds stay identical
         res[axis] = i.resolution or max(1, int((i.max - i.min) / size[axis]))
-        margin = int(room_mm * res[axis])      # room for gliding fingers
-        vlimits[axis] = (i.min - margin, i.max + margin)
+        vlimits[axis] = (i.min, i.max)
         for code in (axis, st):
             if code in info:
                 j = info[code]
-                info[code] = AbsInfo(j.value, j.min - margin, j.max + margin,
-                                     j.fuzz, j.flat, res[axis])
+                info[code] = AbsInfo(j.value, j.min, j.max, j.fuzz, j.flat, res[axis])
     caps[ecodes.EV_ABS] = list(info.items())
     max_slot = info[ABS_MT_SLOT].max if ABS_MT_SLOT in info else 0
     ui = UInput(caps, name=dev.name + " (slowscroll)", input_props=dev.input_props(),
@@ -590,8 +584,7 @@ def run(dev, config_path):
 
     cfg_mtime = mtime()
     cfg = load_config(config_path)
-    room = glide_room_mm(dev)
-    ui, res, vlimits, max_slot = build_virtual(dev, cfg, room)
+    ui, res, vlimits, max_slot = build_virtual(dev, cfg)
     eng = Engine(cfg, res, vlimits, ui.write,
                  size_lift=dev.info.vendor == APPLE, max_slot=max_slot)
     next_check = 0.0
@@ -602,7 +595,7 @@ def run(dev, config_path):
     try:
         dev.grab()
         print(f"slowscroll {VERSION}: {dev.name} ({dev.path}) res={res[PX]}x{res[PY]}/mm "
-              f"glide-room={room:g}mm {describe(cfg)}", flush=True)
+              f"{describe(cfg)}", flush=True)
         while not stop:
             timeout = 0.008 if eng.busy() else 0.5
             r, _, _ = select.select([dev.fd], [], [], timeout)
