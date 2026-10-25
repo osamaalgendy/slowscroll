@@ -4,8 +4,8 @@ Summary:      Review Request: slowscroll - Touchpad scroll speed, acceleration a
 
 --------------------------- paste the text below ----------------------------
 
-Spec URL: https://YOUR-HOST/slowscroll.spec
-SRPM URL: https://YOUR-HOST/slowscroll-1.0.0-1.fc44.src.rpm
+Spec URL: https://raw.githubusercontent.com/osamaalgendy/slowscroll/v1.0.0/packaging/fedora/slowscroll.spec
+SRPM URL: https://github.com/osamaalgendy/slowscroll/releases/download/v1.0.0/slowscroll-1.0.0-1.fc44.src.rpm
 
 Description:
 libinput and GNOME have no setting for two-finger touchpad scroll speed
