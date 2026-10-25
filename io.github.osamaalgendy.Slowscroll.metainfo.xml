@@ -59,6 +59,11 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.0.1" date="2026-10-26">
+      <description>
+        <p>The virtual touchpad now has exactly the size of the real one, so thumb, palm and click-area handling work as without Slowscroll. A long glide that reaches the edge of the touchpad continues with the app's own scrolling.</p>
+      </description>
+    </release>
     <release version="1.0.0" date="2026-10-25">
       <description>
         <p>First release.</p>

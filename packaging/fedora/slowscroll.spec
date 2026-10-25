@@ -1,5 +1,5 @@
 Name:           slowscroll
-Version:        1.0.0
+Version:        1.0.1
 Release:        1%{?dist}
 Summary:        Touchpad scroll speed, acceleration and momentum for libinput
 
@@ -83,5 +83,9 @@ appstream-util validate-relax --nonet %{buildroot}%{_metainfodir}/io.github.osam
 %{_mandir}/man1/slowscroll-settings.1*
 
 %changelog
+* Mon Oct 26 2026 Osama Algendy <71908505+osamaalgendy@users.noreply.github.com> - 1.0.1-1
+- Keep the virtual touchpad at the real pad's size; glides that reach the
+  edge are handed over to the app's own kinetic scrolling
+
 * Sun Oct 25 2026 Osama Algendy <71908505+osamaalgendy@users.noreply.github.com> - 1.0.0-1
 - Initial package
