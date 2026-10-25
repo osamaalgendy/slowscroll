@@ -43,8 +43,6 @@ Notes for the reviewer:
   content 10.5 px per mm of finger travel on this setup, the 2x HiDPI panel shows
   4.35 px per mm, so 0.41 makes content follow the fingers; users can change it.
 * No AppStream metainfo yet (the settings app has a .desktop file only).
-* The application ID io.github.slowscroll.Settings will be changed to match
-  the upstream GitHub account before import.
 * The UI is English by default, with an Arabic translation selected by locale
   (no gettext catalogs yet).
 * This is my first package and I am looking for a sponsor.

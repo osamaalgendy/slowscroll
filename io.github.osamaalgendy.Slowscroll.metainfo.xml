@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+<!-- Copyright (C) 2026 Osama Algendy <71908505+osamaalgendy@users.noreply.github.com> -->
+<component type="desktop-application">
+  <id>io.github.osamaalgendy.Slowscroll</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Slowscroll</name>
+  <summary>Touchpad scroll speed, acceleration and momentum</summary>
+
+  <developer id="io.github.osamaalgendy">
+    <name>Osama Algendy</name>
+  </developer>
+
+  <description>
+    <p>
+      GNOME has no setting for how fast two-finger touchpad scrolling moves.
+      Slowscroll adds one, and makes scrolling feel like a Mac:
+    </p>
+    <ul>
+      <li>Two-finger scroll speed, with a smooth acceleration curve: slow movement is precise, a fast flick goes far</li>
+      <li>The same momentum glide after you lift your fingers in every application; touching the touchpad stops it</li>
+      <li>Scrolling starts as fast as without Slowscroll</li>
+      <li>A separate speed for three-finger gestures</li>
+      <li>Pinch-zoom, taps, clicks and pointer movement are not changed</li>
+    </ul>
+    <p>
+      Every setting applies within a second and has its own reset button.
+      Slowscroll runs as a background service; turn it on in the settings window.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.osamaalgendy.Slowscroll.desktop</launchable>
+
+  <url type="homepage">https://github.com/osamaalgendy/slowscroll</url>
+  <url type="bugtracker">https://github.com/osamaalgendy/slowscroll/issues</url>
+
+  <categories>
+    <category>Settings</category>
+    <category>HardwareSettings</category>
+  </categories>
+
+  <keywords>
+    <keyword>touchpad</keyword>
+    <keyword>trackpad</keyword>
+    <keyword>scroll</keyword>
+    <keyword>scrolling speed</keyword>
+    <keyword>momentum</keyword>
+  </keywords>
+
+  <recommends>
+    <control>pointing</control>
+  </recommends>
+  <supports>
+    <control>keyboard</control>
+  </supports>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="1.0.0" date="2026-10-25">
+      <description>
+        <p>First release.</p>
+      </description>
+    </release>
+  </releases>
+</component>

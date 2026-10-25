@@ -12,6 +12,7 @@ BuildArch:      noarch
 BuildRequires:  python3-devel
 BuildRequires:  python3-evdev
 BuildRequires:  desktop-file-utils
+BuildRequires:  libappstream-glib
 BuildRequires:  systemd-rpm-macros
 
 Requires:       python3-evdev
@@ -49,10 +50,13 @@ install -Dpm 0644 70-slowscroll.rules %{buildroot}%{_udevrulesdir}/70-slowscroll
 install -Dpm 0644 slowscroll.1 %{buildroot}%{_mandir}/man1/slowscroll.1
 install -Dpm 0644 slowscroll-settings.1 %{buildroot}%{_mandir}/man1/slowscroll-settings.1
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
-    io.github.slowscroll.Settings.desktop
+    io.github.osamaalgendy.Slowscroll.desktop
+install -Dpm 0644 io.github.osamaalgendy.Slowscroll.metainfo.xml \
+    %{buildroot}%{_metainfodir}/io.github.osamaalgendy.Slowscroll.metainfo.xml
 
 %check
-desktop-file-validate %{buildroot}%{_datadir}/applications/io.github.slowscroll.Settings.desktop
+desktop-file-validate %{buildroot}%{_datadir}/applications/io.github.osamaalgendy.Slowscroll.desktop
+appstream-util validate-relax --nonet %{buildroot}%{_metainfodir}/io.github.osamaalgendy.Slowscroll.metainfo.xml
 %{python3} -m py_compile slowscroll.py slowscroll-settings.py
 %{python3} slowscroll.py --curve --config /dev/null >/dev/null
 %{python3} tests/test_engine.py slowscroll.py
@@ -73,7 +77,8 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/io.github.slowscroll.
 %{_bindir}/slowscroll-settings
 %{_userunitdir}/slowscroll.service
 %{_udevrulesdir}/70-slowscroll.rules
-%{_datadir}/applications/io.github.slowscroll.Settings.desktop
+%{_datadir}/applications/io.github.osamaalgendy.Slowscroll.desktop
+%{_metainfodir}/io.github.osamaalgendy.Slowscroll.metainfo.xml
 %{_mandir}/man1/slowscroll.1*
 %{_mandir}/man1/slowscroll-settings.1*
 

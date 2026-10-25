@@ -63,7 +63,7 @@ def _(text):
     return AR.get(text, text) if IS_ARABIC else text
 
 
-APP_ID = "io.github.slowscroll.Settings"   # must match the .desktop file name
+APP_ID = "io.github.osamaalgendy.Slowscroll"   # must match the .desktop file name
 CONFIG = os.path.expanduser("~/.config/slowscroll.conf")
 SERVICE = "slowscroll.service"
 
